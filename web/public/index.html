@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Bot Panel</title>
+</head>
+<body>
+
+<h2>📊 Telegram Bot Dashboard</h2>
+
+<input id="chatId" placeholder="Chat ID" />
+
+<button onclick="stats()">Stats</button>
+<button onclick="logs()">Logs</button>
+
+<pre id="out"></pre>
+
+<script>
+async function stats() {
+  const id = chatId.value;
+  const r = await fetch(`http://localhost:3000/stats/${id}`);
+  out.innerText = JSON.stringify(await r.json(), null, 2);
+}
+
+async function logs() {
+  const id = chatId.value;
+  const r = await fetch(`http://localhost:3000/logs/${id}`);
+  out.innerText = JSON.stringify(await r.json(), null, 2);
+}
+</script>
+
+</body>
+</html>

@@ -1,28 +1,34 @@
 const { Telegraf } = require('telegraf');
-const { BOT_TOKEN } = require('./config');
+const connectDB = require('./db');
+const { inc } = require('./services/stats.service');
 
-// middlewares
-const antiSpam = require('./middlewares/antiSpam');
-const filterLinks = require('./middlewares/filterLinks');
+const adminOnly = require('./middlewares/adminOnly');
 
-const startCommand = require('./commands/start');
-const kickCommand = require('./commands/kick');
-const muteCommand = require('./commands/mute');
-const lockCommand = require('./commands/lock');
-const unlockCommand = require('./commands/unlock');
+const kick = require('./commands/kick');
+const ban = require('./commands/ban');
+const mute = require('./commands/mute');
+const logs = require('./commands/logs');
 
-const bot = new Telegraf(BOT_TOKEN);
+const bot = new Telegraf(process.env.BOT_TOKEN);
 
-// Middlewares
-bot.use(antiSpam);
-bot.use(filterLinks);
+connectDB();
 
-// Commands
-startCommand(bot);
-kickCommand(bot);
-muteCommand(bot);
-lockCommand(bot);
-unlockCommand(bot);
+// 📊 شمارش پیام‌ها
+bot.on('text', async (ctx, next) => {
+  await inc(ctx.chat.id, "messages");
+  return next();
+});
+
+// middleware
+bot.use(adminOnly);
+
+// commands
+kick(bot);
+ban(bot);
+mute(bot);
+logs(bot);
+
+bot.start((ctx) => ctx.reply("🤖 Bot ready"));
 
 bot.launch();
-console.log("🤖 Bot is running...");
+console.log("🤖 running...");
